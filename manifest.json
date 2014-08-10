@@ -13,7 +13,6 @@
         "48": "images/icon_48.png", 
         "128": "images/icon_128.png" 
     },
-    
     "author": "chase@chasemaier.com",
     "kiosk_enabled": true,
     "minimum_chrome_version": "36",
