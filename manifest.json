@@ -1,0 +1,41 @@
+{
+    "app": {
+        "background": {
+            "scripts": ["background.js"]
+        }
+    },
+    "manifest_version": 2,
+    "name": "Egg UI",
+    "version": "0.0.1",
+    "description": "Kiosk interface and back-end management for package delivery lockers.",
+    "icons": { 
+        "16": "images/icon_16.png", 
+        "48": "images/icon_48.png", 
+        "128": "images/icon_128.png" 
+    },
+    
+    "author": "chase@chasemaier.com",
+    "kiosk_enabled": true,
+    "minimum_chrome_version": "36",
+    "offline_enabled": true,
+    "permissions": [
+        "alarms",
+        "alwaysOnTopWindows",
+        "audioCapture",
+        "desktopCapture",
+        "fileSystem",
+        "gcm",
+        "geolocation",
+        "idle",
+        "overrideEscFullscreen",
+        "power",
+        "pushMessaging",
+        "serial",
+        "system.display",
+        "tts",
+        "unlimitedStorage",
+        "videoCapture",
+        "webview",
+        "<all_urls>"
+    ]
+}
