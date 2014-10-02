@@ -1,9 +1,16 @@
+var useAlarms = false; // Use alarms or setInterval
+var fullScreenCheckFrequency = 1; // seconds
+
 chrome.tts.speak("Execution Started", {"enqueue": true});
 
 var primaryUiOpen = false;
 
 chrome.app.runtime.onLaunched.addListener(function(launchData) {
     launchApp();
+});
+
+chrome.app.runtime.onRestarted.addListener(function(launchData) {
+    chrome.tts.speak("Restart happened", {"enqueue": true});
 });
 
 
@@ -32,16 +39,20 @@ var launchApp = function() {
                     window.close();
                 }
             };
-            // Create alarms (need cleaned up on window close)
-            chrome.alarms.create("forceFullScreen", {
-                delayInMinutes: 0.1,    // Can't be < 1 in prod... boo
-                periodInMinutes: 0.1    // Can't be < 1 in prod... boo
-            });
-            chrome.alarms.onAlarm.addListener(function (alarm) {
-                if (alarm && alarm.name == "forceFullScreen") {
-                    forceFullScreen();
-                }
-            });
+            if (useAlarms) {
+                // Create alarms (need cleaned up on window close)
+                chrome.alarms.create("forceFullScreen", {
+                    delayInMinutes: 60 / fullScreenCheckFrequency,    // Can't be < 1 in prod... boo
+                    periodInMinutes: 60 / fullScreenCheckFrequency    // Can't be < 1 in prod... boo
+                });
+                chrome.alarms.onAlarm.addListener(function (alarm) {
+                    if (alarm && alarm.name == "forceFullScreen") {
+                        forceFullScreen();
+                    }
+                });
+            } else {
+                var fullScreenInterval = setInterval(forceFullScreen, fullScreenCheckFrequency * 1000);
+            }
             // Create key events (need cleaned up on window close)
             var keyCodeWhitelist = [
                 [32, 32],   // Space
@@ -73,7 +84,11 @@ var launchApp = function() {
                 chrome.tts.speak("Hiding UI, but I'm still running.", {"enqueue": true});
                 window.contentWindow.document.removeEventListener("keydown", keyCallback);
                 window.contentWindow.document.removeEventListener("keyup", keyCallback);
-                chrome.alarms.clear("forceFullScreen");
+                if (useAlarms) {
+                    chrome.alarms.clear("forceFullScreen");
+                } else {
+                    clearInterval(fullScreenInterval);
+                }
                 window.contentWindow.closed = false;
             });
         }
