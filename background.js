@@ -1,7 +1,8 @@
 var useAlarms = false; // Use alarms or setInterval
-var fullScreenCheckFrequency = 1; // seconds
+var fullScreenCheckFrequency = 8; // seconds
+var fullScreenEnforced = false;
 
-chrome.tts.speak("Execution Started", {"enqueue": true});
+chrome.tts.speak("Background Execution Started", {"enqueue": true});
 
 var primaryUiOpen = false;
 
@@ -12,7 +13,6 @@ chrome.app.runtime.onLaunched.addListener(function(launchData) {
 chrome.app.runtime.onRestarted.addListener(function(launchData) {
     chrome.tts.speak("Restart happened", {"enqueue": true});
 });
-
 
 var launchApp = function() {
     chrome.app.window.create(
@@ -26,17 +26,19 @@ var launchApp = function() {
         function(window) {
             primaryUiOpen = !window.contentWindow.closed;
             var forceFullScreen = function () {
-                chrome.tts.speak("Alarm, Tick", {"enqueue": true});
-                chrome.tts.speak("Window " + primaryUiOpen, {"enqueue": true});
-                window.show();
-                if (!window.isFullscreen()) {
-                    window.fullscreen();
-                    chrome.tts.speak("Full Screen", {"enqueue": true});
-                }
-                // @temp Randomly shut down UI for no reason
-                if (Math.random() > 0.9) {
-                    chrome.tts.speak("Shutting Down UI", {"enqueue": true});
-                    window.close();
+                if (fullScreenEnforced) {
+                    chrome.tts.speak("Alarm, Tick", {"enqueue": true});
+                    chrome.tts.speak("Window " + primaryUiOpen, {"enqueue": true});
+                    window.show();
+                    if (!window.isFullscreen()) {
+                        window.fullscreen();
+                        chrome.tts.speak("Full Screen", {"enqueue": true});
+                    }
+                    // @temp Randomly shut down UI for no reason
+                    if (Math.random() > 0.9) {
+                        chrome.tts.speak("Shutting Down UI", {"enqueue": true});
+                        window.close();
+                    }
                 }
             };
             if (useAlarms) {
