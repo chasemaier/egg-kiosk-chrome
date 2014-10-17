@@ -12,6 +12,23 @@ function str2ab(str) {
     return buf;
 }
 
+function scannerOn(connectionId) {
+    var sendString = "TRGSTO300000";
+    var sendCommand = String.fromCharCode(22) + sendString + String.fromCharCode(13);
+    chrome.serial.send(connectionId, str2ab(sendCommand), function(sendInfo) {
+        console.log(sendInfo);
+        chrome.tts.speak('Send done', {'enqueue': true});
+    });
+}
+function scannerOff(connectionId) {
+    var sendString = "PAPHHF";
+    var sendCommand = String.fromCharCode(22) + sendString + String.fromCharCode(13);
+    chrome.serial.send(connectionId, str2ab(sendCommand), function(sendInfo) {
+        console.log(sendInfo);
+        chrome.tts.speak('Send done', {'enqueue': true});
+    });
+}
+
 // Wait for document to be ready
 $(function() {
     chrome.tts.speak('UI is ready', {'enqueue': true});
@@ -41,6 +58,7 @@ $(function() {
                     $button.data('com-connection-id', connectionInfo.connectionId);
                     
                     chrome.serial.onReceive.addListener(function(info) {
+                        scannerOff(connectionInfo.connectionId);
                         var dataAsStr = ab2str(info.data);
                         $button.effect('highlight');
                         $('#com-result').text(dataAsStr).effect('highlight');
@@ -49,6 +67,8 @@ $(function() {
                     chrome.serial.onReceiveError.addListener(function (info) {
                         console.log("onReceiveError", info);
                     });
+                    
+                    //TRGMOD0
                     
                     //                          Hex
                     //Request: PAPHHF           50 41 50 48 48 46
@@ -63,20 +83,18 @@ $(function() {
                         console.log("signals: ", signals);
                     });
                     
-                    var sendString = "TRGMOD3";
-                    chrome.serial.send(connectionInfo.connectionId, str2ab(sendString), function(sendInfo) {
-                        console.log(sendInfo);
-                        chrome.tts.speak('Send done', {'enqueue': true});
-                    });
+                    scannerOn(connectionInfo.connectionId);
                     
+                    /*
                     chrome.serial.flush(connectionInfo.connectionId, function(success) {
                         console.log(success);
                         chrome.tts.speak('Flush done', {'enqueue': true});
                     });
-                    
+                    */
                 });
             } else {
                 var connectionId = $button.data('com-connection-id');
+                scannerOff(connectionId);
                 chrome.serial.disconnect(connectionId, function (success) {
                     if (success) {
                         chrome.tts.speak('Disconnected connection ID ' + connectionId, {'enqueue': true});
@@ -88,7 +106,4 @@ $(function() {
             }
         });
     });
-    
-
-    //$('*').css('background-color', 'red'); 
 });
