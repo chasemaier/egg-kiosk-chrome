@@ -13,24 +13,27 @@ function str2ab(str) {
 }
 
 function scannerOn(connectionId) {
-    var sendString = "TRGSTO300000";
+    var sendString = "T";
     var sendCommand = String.fromCharCode(22) + sendString + String.fromCharCode(13);
     chrome.serial.send(connectionId, str2ab(sendCommand), function(sendInfo) {
         console.log(sendInfo);
         chrome.tts.speak('Send done', {'enqueue': true});
     });
 }
-function scannerOff(connectionId) {
-    var sendString = "PAPHHF";
+function scannerOff(connectionId, callback) {
+    var sendString = "U";
     var sendCommand = String.fromCharCode(22) + sendString + String.fromCharCode(13);
     chrome.serial.send(connectionId, str2ab(sendCommand), function(sendInfo) {
         console.log(sendInfo);
         chrome.tts.speak('Send done', {'enqueue': true});
+        if (typeof callback === 'function') {
+            callback();
+        }
     });
 }
 
 // Wait for document to be ready
-$(function() {
+$(function() {  
     chrome.tts.speak('UI is ready', {'enqueue': true});
     
     $('.secret-tool-close').on('click', function() {
@@ -94,14 +97,15 @@ $(function() {
                 });
             } else {
                 var connectionId = $button.data('com-connection-id');
-                scannerOff(connectionId);
-                chrome.serial.disconnect(connectionId, function (success) {
-                    if (success) {
-                        chrome.tts.speak('Disconnected connection ID ' + connectionId, {'enqueue': true});
-                        $button.removeClass('com-active');
-                    } else {
-                        chrome.tts.speak('Disonnect attempt failed for connection ID ' + connectionId, {'enqueue': true});
-                    }
+                scannerOff(connectionId, function() {
+                    chrome.serial.disconnect(connectionId, function (success) {
+                        if (success) {
+                            chrome.tts.speak('Disconnected connection ID ' + connectionId, {'enqueue': true});
+                            $button.removeClass('com-active');
+                        } else {
+                            chrome.tts.speak('Disonnect attempt failed for connection ID ' + connectionId, {'enqueue': true});
+                        }
+                    });
                 });
             }
         });
